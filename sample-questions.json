@@ -1,0 +1,16 @@
+[
+  {
+    "question": "What city was the capital of Japan before Tokyo?",
+    "answer": "Kyoto",
+    "explanation": "Kyoto was the imperial capital of Japan before the capital moved to Tokyo.",
+    "category": "History",
+    "difficulty": "Easy"
+  },
+  {
+    "question": "Who wrote the novel 1984?",
+    "answer": "George Orwell",
+    "explanation": "The novel was published in 1949.",
+    "category": "Literature",
+    "difficulty": "Easy"
+  }
+]
