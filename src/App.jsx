@@ -3,7 +3,7 @@ import StartScreen from "./components/StartScreen.jsx";
 import GameScreen from "./components/GameScreen.jsx";
 import ResultScreen from "./components/ResultScreen.jsx";
 import ReviewWrongAnswers from "./components/ReviewWrongAnswers.jsx";
-import { shuffleQuestions } from "./utils/quiz.js";
+import { selectRandomQuestions } from "./utils/quiz.js";
 import { loadStoredJson, saveStoredJson } from "./utils/storage.js";
 
 const LAST_RESULT_KEY = "catQuiz:lastResult";
@@ -12,6 +12,7 @@ const LAST_SET_KEY = "catQuiz:lastQuestionSet";
 function App() {
   const [screen, setScreen] = useState("start");
   const [questions, setQuestions] = useState([]);
+  const [selectedQuestionCount, setSelectedQuestionCount] = useState(10);
   const [questionSetMeta, setQuestionSetMeta] = useState(null);
   const [uploadError, setUploadError] = useState("");
   const [gameQuestions, setGameQuestions] = useState([]);
@@ -42,6 +43,7 @@ function App() {
 
   function applyQuestionSet(nextQuestions, nextMeta) {
     setQuestions(nextQuestions);
+    setSelectedQuestionCount(Math.min(10, nextQuestions.length));
     setQuestionSetMeta(nextMeta);
     setUploadError("");
     saveStoredJson(LAST_SET_KEY, nextMeta);
@@ -66,7 +68,7 @@ function App() {
       return;
     }
 
-    setGameQuestions(shuffleQuestions(questions));
+    setGameQuestions(selectRandomQuestions(questions, selectedQuestionCount));
     setCurrentIndex(0);
     setCatScore(0);
     setWrongAnswers([]);
@@ -119,11 +121,13 @@ function App() {
       {screen === "start" && (
         <StartScreen
           questions={questions}
+          selectedQuestionCount={selectedQuestionCount}
           questionSetMeta={questionSetMeta}
           uploadError={uploadError}
           lastResult={lastResult}
           onFileLoaded={handleFileLoaded}
           onUploadError={handleUploadError}
+          onQuestionCountChange={setSelectedQuestionCount}
           onStart={startGame}
         />
       )}

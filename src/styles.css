@@ -637,6 +637,37 @@ h1 {
   color: #59687d;
 }
 
+.question-count-field {
+  width: min(100%, 420px);
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+  color: var(--color-ink);
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.question-count-field select {
+  width: 100%;
+  min-height: 54px;
+  border: 2px solid rgba(52, 120, 246, 0.22);
+  border-radius: 14px;
+  padding: 0 16px;
+  color: var(--color-ink);
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.question-count-field select:focus-visible {
+  outline: 4px solid rgba(88, 204, 2, 0.24);
+  outline-offset: 3px;
+}
+
+.start-ready .random-order-note {
+  margin-top: 10px;
+  font-size: 1rem;
+}
+
 .start-deco {
   position: absolute;
   z-index: 0;
