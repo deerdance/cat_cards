@@ -3,7 +3,13 @@ import StartScreen from "./components/StartScreen.jsx";
 import GameScreen from "./components/GameScreen.jsx";
 import ResultScreen from "./components/ResultScreen.jsx";
 import ReviewWrongAnswers from "./components/ReviewWrongAnswers.jsx";
-import { selectRandomQuestions } from "./utils/quiz.js";
+import {
+  filterQuestions,
+  getQuestionCategories,
+  getQuestionCountOptions,
+  getQuestionDifficulties,
+  selectRandomQuestions,
+} from "./utils/quiz.js";
 import { loadStoredJson, saveStoredJson } from "./utils/storage.js";
 
 const LAST_RESULT_KEY = "catQuiz:lastResult";
@@ -13,6 +19,8 @@ function App() {
   const [screen, setScreen] = useState("start");
   const [questions, setQuestions] = useState([]);
   const [selectedQuestionCount, setSelectedQuestionCount] = useState(10);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedDifficulties, setSelectedDifficulties] = useState([]);
   const [questionSetMeta, setQuestionSetMeta] = useState(null);
   const [uploadError, setUploadError] = useState("");
   const [gameQuestions, setGameQuestions] = useState([]);
@@ -24,6 +32,27 @@ function App() {
   useEffect(() => {
     setLastResult(loadStoredJson(LAST_RESULT_KEY));
   }, []);
+
+  const availableCategories = useMemo(
+    () => getQuestionCategories(questions),
+    [questions],
+  );
+  const availableDifficulties = useMemo(
+    () => getQuestionDifficulties(questions),
+    [questions],
+  );
+  const filteredQuestions = useMemo(
+    () => filterQuestions(questions, selectedCategories, selectedDifficulties),
+    [questions, selectedCategories, selectedDifficulties],
+  );
+
+  useEffect(() => {
+    const options = getQuestionCountOptions(filteredQuestions.length);
+
+    setSelectedQuestionCount((currentCount) =>
+      options.includes(currentCount) ? currentCount : (options[0] ?? 0),
+    );
+  }, [filteredQuestions.length]);
 
   const currentQuestion = gameQuestions[currentIndex];
 
@@ -44,6 +73,8 @@ function App() {
   function applyQuestionSet(nextQuestions, nextMeta) {
     setQuestions(nextQuestions);
     setSelectedQuestionCount(Math.min(10, nextQuestions.length));
+    setSelectedCategories([]);
+    setSelectedDifficulties([]);
     setQuestionSetMeta(nextMeta);
     setUploadError("");
     saveStoredJson(LAST_SET_KEY, nextMeta);
@@ -60,15 +91,17 @@ function App() {
   function handleUploadError(message) {
     setUploadError(message);
     setQuestions([]);
+    setSelectedCategories([]);
+    setSelectedDifficulties([]);
     setQuestionSetMeta(null);
   }
 
   function startGame() {
-    if (questions.length === 0) {
+    if (filteredQuestions.length === 0) {
       return;
     }
 
-    setGameQuestions(selectRandomQuestions(questions, selectedQuestionCount));
+    setGameQuestions(selectRandomQuestions(filteredQuestions, selectedQuestionCount));
     setCurrentIndex(0);
     setCatScore(0);
     setWrongAnswers([]);
@@ -121,12 +154,19 @@ function App() {
       {screen === "start" && (
         <StartScreen
           questions={questions}
+          availableCategories={availableCategories}
+          availableDifficulties={availableDifficulties}
+          filteredQuestionCount={filteredQuestions.length}
+          selectedCategories={selectedCategories}
+          selectedDifficulties={selectedDifficulties}
           selectedQuestionCount={selectedQuestionCount}
           questionSetMeta={questionSetMeta}
           uploadError={uploadError}
           lastResult={lastResult}
           onFileLoaded={handleFileLoaded}
           onUploadError={handleUploadError}
+          onCategoriesChange={setSelectedCategories}
+          onDifficultiesChange={setSelectedDifficulties}
           onQuestionCountChange={setSelectedQuestionCount}
           onStart={startGame}
         />

@@ -637,6 +637,121 @@ h1 {
   color: #59687d;
 }
 
+.quiz-filter-panel {
+  width: min(100%, 720px);
+  display: grid;
+  gap: 22px;
+  margin-top: 22px;
+  border: 1px solid rgba(84, 108, 135, 0.14);
+  border-radius: 20px;
+  padding: 22px;
+  background: #f8fbff;
+}
+
+.quiz-filter-group {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.quiz-filter-group legend {
+  padding: 0;
+  color: var(--color-ink);
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.quiz-filter-group p {
+  margin: 5px 0 12px;
+  font-size: 0.95rem;
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid rgba(52, 120, 246, 0.16);
+  border-radius: 999px;
+  padding: 9px 15px;
+  color: #3f536f;
+  background: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.filter-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(52, 120, 246, 0.42);
+}
+
+.filter-chip.is-selected {
+  border-color: #3478f6;
+  color: #ffffff;
+  background: #3478f6;
+  box-shadow: 0 8px 18px rgba(52, 120, 246, 0.2);
+}
+
+.filter-chip input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.filter-chip:has(input:focus-visible) {
+  outline: 4px solid rgba(88, 204, 2, 0.24);
+  outline-offset: 3px;
+}
+
+.difficulty-chip span {
+  text-transform: lowercase;
+}
+
+.filter-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid rgba(84, 108, 135, 0.12);
+  padding-top: 16px;
+  color: var(--color-ink);
+}
+
+.filter-summary button {
+  padding: 0;
+  color: #2f6fd6;
+  background: transparent;
+  font-weight: 900;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.no-filter-results {
+  width: min(100%, 720px);
+  margin-top: 18px;
+  border: 1px solid #ffc2d0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  color: #762436;
+  background: #fff0f2;
+  font-weight: 800;
+}
+
 .question-count-field {
   width: min(100%, 420px);
   display: grid;
@@ -1615,6 +1730,19 @@ h1 {
 
   .start-ready {
     max-width: none;
+  }
+
+  .quiz-filter-panel {
+    padding: 18px;
+  }
+
+  .filter-chip {
+    padding: 9px 13px;
+  }
+
+  .filter-summary {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .start-button {
