@@ -2,6 +2,8 @@
 
 A small browser-based React quiz game where players answer out loud, reveal the answer, and self-score with cozy cat reactions.
 
+After loading a JSON file, the player can choose 10, 15, or 20 questions. Each game uses a random selection in a random order. If the file contains fewer than 10 questions, all available questions are used.
+
 ## Run Locally
 
 ```bash
