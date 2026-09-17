@@ -17,6 +17,61 @@ export function selectRandomQuestions(questions, count) {
   return shuffleQuestions(questions).slice(0, normalizedCount);
 }
 
+export function getQuestionCategories(questions) {
+  return [...new Set(questions.map((question) => question.category).filter(Boolean))].sort(
+    (left, right) => left.localeCompare(right, "ru"),
+  );
+}
+
+export function getQuestionDifficulties(questions) {
+  const difficultyOrder = ["easy", "medium", "hard"];
+  const difficulties = new Set(
+    questions
+      .map((question) => normalizeDifficulty(question.difficulty))
+      .filter(Boolean),
+  );
+
+  return [...difficulties].sort((left, right) => {
+    const leftIndex = difficultyOrder.indexOf(left);
+    const rightIndex = difficultyOrder.indexOf(right);
+    const leftOrder = leftIndex === -1 ? difficultyOrder.length : leftIndex;
+    const rightOrder = rightIndex === -1 ? difficultyOrder.length : rightIndex;
+
+    return leftOrder - rightOrder || left.localeCompare(right, "ru");
+  });
+}
+
+export function filterQuestions(questions, selectedCategories, selectedDifficulties) {
+  const categories = new Set(selectedCategories);
+  const difficulties = new Set(selectedDifficulties.map(normalizeDifficulty));
+
+  return questions.filter((question) => {
+    const matchesCategory = categories.size === 0 || categories.has(question.category);
+    const matchesDifficulty =
+      difficulties.size === 0 || difficulties.has(normalizeDifficulty(question.difficulty));
+
+    return matchesCategory && matchesDifficulty;
+  });
+}
+
+export function getQuestionCountOptions(totalQuestions) {
+  if (totalQuestions <= 0) {
+    return [];
+  }
+
+  const options = [10, 15, 20].filter((count) => count <= totalQuestions);
+
+  if (options.length === 0 || options[options.length - 1] !== totalQuestions) {
+    options.push(totalQuestions);
+  }
+
+  return options;
+}
+
+function normalizeDifficulty(value) {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
 export function validateQuestionSet(rawValue) {
   if (!Array.isArray(rawValue)) {
     return {
