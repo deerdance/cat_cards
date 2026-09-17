@@ -9,6 +9,14 @@ export function shuffleQuestions(questions) {
   return shuffled;
 }
 
+export function selectRandomQuestions(questions, count) {
+  const normalizedCount = Number.isFinite(count)
+    ? Math.max(0, Math.min(Math.floor(count), questions.length))
+    : questions.length;
+
+  return shuffleQuestions(questions).slice(0, normalizedCount);
+}
+
 export function validateQuestionSet(rawValue) {
   if (!Array.isArray(rawValue)) {
     return {
