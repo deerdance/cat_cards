@@ -35,16 +35,19 @@ const JSON_HELP_PROMPT = `Составь JSON-файл с вопросами д�
 
 function StartScreen({
   questions,
+  selectedQuestionCount,
   questionSetMeta,
   uploadError,
   lastResult,
   onFileLoaded,
   onUploadError,
+  onQuestionCountChange,
   onStart,
 }) {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isPromptCopied, setIsPromptCopied] = useState(false);
   const hasQuestions = questions.length > 0;
+  const questionCountOptions = getQuestionCountOptions(questions.length);
   const loadedLabel = questionSetMeta
     ? `${questionSetMeta.count} ${getQuestionWord(questionSetMeta.count)} загружено`
     : "Файл пока не выбран";
@@ -146,13 +149,32 @@ function StartScreen({
           <div className="section-kicker step-pill step-two">Шаг 2</div>
           <h2>Начните игру</h2>
           {hasQuestions ? (
-            <button
-              className="primary-button start-button"
-              type="button"
-              onClick={onStart}
-            >
-              Начать игру
-            </button>
+            <>
+              <label className="question-count-field" htmlFor="question-count">
+                <span>Сколько вопросов показать?</span>
+                <select
+                  id="question-count"
+                  value={selectedQuestionCount}
+                  onChange={(event) => onQuestionCountChange(Number(event.target.value))}
+                >
+                  {questionCountOptions.map((count) => (
+                    <option key={count} value={count}>
+                      {count === questions.length ? `${count} (все)` : count}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <p className="random-order-note">
+                Вопросы будут выбраны случайно и показаны в случайном порядке.
+              </p>
+              <button
+                className="primary-button start-button"
+                type="button"
+                onClick={onStart}
+              >
+                Начать игру
+              </button>
+            </>
           ) : (
             <p>После загрузки файла здесь появится кнопка старта.</p>
           )}
@@ -212,6 +234,16 @@ function StartScreen({
       )}
     </section>
   );
+}
+
+function getQuestionCountOptions(totalQuestions) {
+  const options = [10, 15, 20].filter((count) => count <= totalQuestions);
+
+  if (options.length === 0 || options.at(-1) !== totalQuestions) {
+    options.push(totalQuestions);
+  }
+
+  return options;
 }
 
 function getQuestionWord(count) {
