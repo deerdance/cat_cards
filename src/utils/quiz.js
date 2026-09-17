@@ -18,9 +18,21 @@ export function selectRandomQuestions(questions, count) {
 }
 
 export function getQuestionCategories(questions) {
-  return [...new Set(questions.map((question) => question.category).filter(Boolean))].sort(
-    (left, right) => left.localeCompare(right, "ru"),
+  const topicOrder = ["API", "БД", "Архитектура", "Kafka", "Анализ", "Другое"];
+  const topics = new Set(
+    questions
+      .map((question) => getQuestionTopic(question.category))
+      .filter(Boolean),
   );
+
+  return [...topics].sort((left, right) => {
+    const leftIndex = topicOrder.indexOf(left);
+    const rightIndex = topicOrder.indexOf(right);
+    const leftOrder = leftIndex === -1 ? topicOrder.length : leftIndex;
+    const rightOrder = rightIndex === -1 ? topicOrder.length : rightIndex;
+
+    return leftOrder - rightOrder || left.localeCompare(right, "ru");
+  });
 }
 
 export function getQuestionDifficulties(questions) {
@@ -46,12 +58,120 @@ export function filterQuestions(questions, selectedCategories, selectedDifficult
   const difficulties = new Set(selectedDifficulties.map(normalizeDifficulty));
 
   return questions.filter((question) => {
-    const matchesCategory = categories.size === 0 || categories.has(question.category);
+    const matchesCategory =
+      categories.size === 0 || categories.has(getQuestionTopic(question.category));
     const matchesDifficulty =
       difficulties.size === 0 || difficulties.has(normalizeDifficulty(question.difficulty));
 
     return matchesCategory && matchesDifficulty;
   });
+}
+
+export function getQuestionTopic(category) {
+  if (typeof category !== "string" || category.trim().length === 0) {
+    return "Другое";
+  }
+
+  const value = category.trim().toLowerCase().replaceAll("ё", "е");
+  const containsAny = (keywords) => keywords.some((keyword) => value.includes(keyword));
+
+  if (
+    containsAny([
+      "api",
+      "апи",
+      "rest",
+      "soap",
+      "graphql",
+      "grpc",
+      "http",
+      "endpoint",
+      "эндпоинт",
+      "webhook",
+      "вебхук",
+      "openapi",
+      "swagger",
+    ])
+  ) {
+    return "API";
+  }
+
+  if (
+    containsAny([
+      "бд",
+      "баз дан",
+      "база дан",
+      "database",
+      "sql",
+      "nosql",
+      "postgres",
+      "mysql",
+      "oracle",
+      "транзакц",
+      "нормализац",
+      "денормализац",
+      "индекс",
+      "таблиц",
+      "ключи и связи",
+      "реляцион",
+    ])
+  ) {
+    return "БД";
+  }
+
+  if (
+    containsAny([
+      "kafka",
+      "кафка",
+      "message broker",
+      "брокер сообщ",
+      "очеред",
+      "producer",
+      "consumer",
+      "партиц",
+      "топик",
+      "event streaming",
+    ])
+  ) {
+    return "Kafka";
+  }
+
+  if (
+    containsAny([
+      "архитектур",
+      "system design",
+      "проектирован",
+      "интеграц",
+      "микросервис",
+      "монолит",
+      "распределен",
+      "масштабирован",
+      "отказоустойчив",
+      "паттерн",
+      "cap теорем",
+      "cqrs",
+      "saga",
+    ])
+  ) {
+    return "Архитектура";
+  }
+
+  if (
+    containsAny([
+      "требован",
+      "аналитик",
+      "анализ",
+      "bpmn",
+      "uml",
+      "use case",
+      "user story",
+      "бизнес-процесс",
+      "бизнес процесс",
+    ])
+  ) {
+    return "Анализ";
+  }
+
+  return "Другое";
 }
 
 export function getQuestionCountOptions(totalQuestions) {
