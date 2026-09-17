@@ -2,6 +2,7 @@ import { useState } from "react";
 import FileUploader from "./FileUploader.jsx";
 import catCoin from "../assets/cat-coin.png";
 import startHeroCat from "../assets/start-hero-cat.png";
+import { getQuestionCountOptions } from "../utils/quiz.js";
 
 const JSON_HELP_PROMPT = `Составь JSON-файл с вопросами для квиз-игры.
 
@@ -35,19 +36,28 @@ const JSON_HELP_PROMPT = `Составь JSON-файл с вопросами д�
 
 function StartScreen({
   questions,
+  availableCategories,
+  availableDifficulties,
+  filteredQuestionCount,
+  selectedCategories,
+  selectedDifficulties,
   selectedQuestionCount,
   questionSetMeta,
   uploadError,
   lastResult,
   onFileLoaded,
   onUploadError,
+  onCategoriesChange,
+  onDifficultiesChange,
   onQuestionCountChange,
   onStart,
 }) {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isPromptCopied, setIsPromptCopied] = useState(false);
   const hasQuestions = questions.length > 0;
-  const questionCountOptions = getQuestionCountOptions(questions.length);
+  const hasActiveFilters = selectedCategories.length > 0 || selectedDifficulties.length > 0;
+  const hasMatchingQuestions = filteredQuestionCount > 0;
+  const questionCountOptions = getQuestionCountOptions(filteredQuestionCount);
   const loadedLabel = questionSetMeta
     ? `${questionSetMeta.count} ${getQuestionWord(questionSetMeta.count)} загружено`
     : "Файл пока не выбран";
@@ -73,6 +83,14 @@ function StartScreen({
     } catch {
       setIsPromptCopied(false);
     }
+  }
+
+  function toggleFilter(value, selectedValues, onChange) {
+    const nextValues = selectedValues.includes(value)
+      ? selectedValues.filter((selectedValue) => selectedValue !== value)
+      : [...selectedValues, value];
+
+    onChange(nextValues);
   }
 
   return (
@@ -150,30 +168,119 @@ function StartScreen({
           <h2>Начните игру</h2>
           {hasQuestions ? (
             <>
-              <label className="question-count-field" htmlFor="question-count">
-                <span>Сколько вопросов показать?</span>
-                <select
-                  id="question-count"
-                  value={selectedQuestionCount}
-                  onChange={(event) => onQuestionCountChange(Number(event.target.value))}
-                >
-                  {questionCountOptions.map((count) => (
-                    <option key={count} value={count}>
-                      {count === questions.length ? `${count} (все)` : count}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <p className="random-order-note">
-                Вопросы будут выбраны случайно и показаны в случайном порядке.
-              </p>
-              <button
-                className="primary-button start-button"
-                type="button"
-                onClick={onStart}
-              >
-                Начать игру
-              </button>
+              {(availableCategories.length > 0 || availableDifficulties.length > 0) && (
+                <div className="quiz-filter-panel">
+                  {availableCategories.length > 0 && (
+                    <fieldset className="quiz-filter-group">
+                      <legend>Темы</legend>
+                      <p>Можно выбрать одну или несколько. Без выбора — все темы.</p>
+                      <div className="filter-options">
+                        {availableCategories.map((category) => {
+                          const isSelected = selectedCategories.includes(category);
+
+                          return (
+                            <label
+                              className={`filter-chip ${isSelected ? "is-selected" : ""}`}
+                              key={category}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() =>
+                                  toggleFilter(category, selectedCategories, onCategoriesChange)
+                                }
+                              />
+                              <span>{category}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </fieldset>
+                  )}
+
+                  {availableDifficulties.length > 0 && (
+                    <fieldset className="quiz-filter-group">
+                      <legend>Уровень сложности</legend>
+                      <p>Без выбора будут использоваться все уровни.</p>
+                      <div className="filter-options">
+                        {availableDifficulties.map((difficulty) => {
+                          const isSelected = selectedDifficulties.includes(difficulty);
+
+                          return (
+                            <label
+                              className={`filter-chip difficulty-chip ${isSelected ? "is-selected" : ""}`}
+                              key={difficulty}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() =>
+                                  toggleFilter(
+                                    difficulty,
+                                    selectedDifficulties,
+                                    onDifficultiesChange,
+                                  )
+                                }
+                              />
+                              <span>{difficulty}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </fieldset>
+                  )}
+
+                  <div className="filter-summary" aria-live="polite">
+                    <strong>
+                      Подходит {filteredQuestionCount} {getQuestionWord(filteredQuestionCount)}
+                    </strong>
+                    {hasActiveFilters && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onCategoriesChange([]);
+                          onDifficultiesChange([]);
+                        }}
+                      >
+                        Сбросить фильтры
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {hasMatchingQuestions ? (
+                <>
+                  <label className="question-count-field" htmlFor="question-count">
+                    <span>Сколько вопросов показать?</span>
+                    <select
+                      id="question-count"
+                      value={selectedQuestionCount}
+                      onChange={(event) => onQuestionCountChange(Number(event.target.value))}
+                    >
+                      {questionCountOptions.map((count) => (
+                        <option key={count} value={count}>
+                          {count === filteredQuestionCount ? `${count} (все)` : count}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <p className="random-order-note">
+                    Вопросы будут выбраны случайно и показаны в случайном порядке.
+                  </p>
+                  <button
+                    className="primary-button start-button"
+                    type="button"
+                    onClick={onStart}
+                  >
+                    Начать игру
+                  </button>
+                </>
+              ) : (
+                <div className="no-filter-results" role="alert">
+                  Для выбранной комбинации нет вопросов. Измените или сбросьте фильтры.
+                </div>
+              )}
             </>
           ) : (
             <p>После загрузки файла здесь появится кнопка старта.</p>
@@ -234,16 +341,6 @@ function StartScreen({
       )}
     </section>
   );
-}
-
-function getQuestionCountOptions(totalQuestions) {
-  const options = [10, 15, 20].filter((count) => count <= totalQuestions);
-
-  if (options.length === 0 || options.at(-1) !== totalQuestions) {
-    options.push(totalQuestions);
-  }
-
-  return options;
 }
 
 function getQuestionWord(count) {
